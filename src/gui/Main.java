@@ -10,6 +10,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -116,7 +117,8 @@ public class Main extends Application{
 			
 			// create, set scene and show stage
 			Scene scene = new Scene(root,800,600);
-			primaryStage.setTitle("NetStudio");			
+			primaryStage.setTitle("NetStudio");		
+			primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("NetStudio.png")));
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
