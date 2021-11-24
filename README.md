@@ -1,4 +1,4 @@
-<img src="https://img.shields.io/badge/Language-Java-red.svg" style="zoom:100%;" /> <img src="https://visitor-badge.glitch.me/badge?page_id=carlga.NetStudio&right_color=red&left_text=Total%20Visits" alt="visitor badge"/>
+<img src="https://img.shields.io/badge/Language-Java-orange.svg" style="zoom:100%;" /> <!--- <img src="https://visitor-badge.glitch.me/badge?page_id=carlga.NetStudio&right_color=red&left_text=Total%20Visits" alt="visitor badge"/> -->
 <img src="src/gui/NetStudio.png"  width=100 align="right">
 
 # NetStudio
