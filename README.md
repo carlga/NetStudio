@@ -3,5 +3,5 @@
 
 # NetStudio
 > ***NetStudio*** is a simple Java desktop application for undirected graph visualization and analysis.
-> The software was developed for fun and is provided as is, for those learning and/or seeking for inspiration.
+> The software was developed for fun and is provided as is for those learning and/or seeking for inspiration.
 > Kindly drop a :star: if this is helpful!

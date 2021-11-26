@@ -1,10 +1,18 @@
 package gui;
 
+import core.NetEdge;
+import core.NetNode;
+import core.Network;
+import handlers.Controller;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -19,8 +27,20 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import visualization.NetNodeShape;
+import visualization.Visualization;
+
+
+/**
+ * Main.java
+ * MAIN CLASS OF THE APPLICATION
+ * @author CarlosGallardo
+ */
 
 public class Main extends Application{
+	
+	Visualization visualization;
+	Network network;
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -61,14 +81,16 @@ public class Main extends Application{
 			Label nodeSizeLbl = new Label("Size:");
 			TextField nodeSizeTxt = new TextField();
 			Label nodeShapeLbl = new Label("Shape:");
-			TextField nodeShapeBox = new TextField();		// shape options for node
+			ComboBox<NetNodeShape> nodeShapeComboBox = new ComboBox<NetNodeShape>();
+			nodeShapeComboBox.getItems().setAll(NetNodeShape.values());
+			nodeShapeComboBox.setValue(NetNodeShape.CIRCLE);
 			Label nodeColorLbl = new Label("Colour:");
 			ColorPicker nodeColorPicker = new ColorPicker();
 			Button updateNode = new Button("Update");
 			GridPane.setConstraints(nodeSizeLbl, 0, 0);
 			GridPane.setConstraints(nodeSizeTxt, 1, 0);
 			GridPane.setConstraints(nodeShapeLbl, 0, 1);
-			GridPane.setConstraints(nodeShapeBox, 1, 1);
+			GridPane.setConstraints(nodeShapeComboBox, 1, 1);
 			GridPane.setConstraints(nodeColorLbl, 0, 2);
 			GridPane.setConstraints(nodeColorPicker, 1, 2);
 			GridPane.setConstraints(updateNode, 0, 3);
@@ -102,13 +124,67 @@ public class Main extends Application{
 			AnchorPane.setLeftAnchor(networkInfoLbl, 10.0);
 			AnchorPane.setRightAnchor(statusLbl, 10.0);
 			
+			// set action events
+			searchNode.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					if(nodeSelectionTxt.getText().matches("[\\w]+")) {
+						NetNode node = new NetNode(nodeSelectionTxt.getText());
+						Network network = visualization.getNetwork();
+						if(network.getNodes().contains(node)) {
+							nodeSizeTxt.setText(Integer.toString(network.getNode(node).size));
+							nodeShapeComboBox.getSelectionModel().select(network.getNode(node).shape);
+							nodeColorPicker.setValue(network.getNode(node).color);
+						} else {
+							Controller.AlertBox.display(AlertType.WARNING, "Given node is not present.");
+						}
+					} else {
+						Controller.AlertBox.display(AlertType.WARNING, "Only word characters allowed.");
+					}
+				}
+			});
+			updateNode.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					if(nodeSizeTxt.getText().matches("[1-9][\\d]")) {
+						NetNode node = new NetNode(nodeSelectionTxt.getText());
+						Network network = visualization.getNetwork();
+						if(network.getNodes().contains(node)) {
+							network.getNode(node).updateView(nodeShapeComboBox.getValue(), Integer.parseInt(nodeSizeTxt.getText()), nodeColorPicker.getValue());
+							for(NetEdge edge : network.getEdges()) {
+								if(edge.hasNode(node)) edge.updateInteractionView(network.getNode(node));
+							}
+						} else {
+							Controller.AlertBox.display(AlertType.WARNING, "Given node is not present.");
+						}
+					} else {
+						Controller.AlertBox.display(AlertType.WARNING, "Use a valid size (10-99).");
+					}
+				}
+			});
+			addEdge.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					if(node1Txt.getText().matches("[\\w]+") && node2Txt.getText().matches("[\\w]+")) {
+						addNewEdge(node1Txt.getText(), node2Txt.getText());
+					}
+					else Controller.AlertBox.display(AlertType.WARNING, "Only word characters allowed.");
+				}
+			});
+			removeEdge.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					if(node1Txt.getText().matches("[\\w]+") && node2Txt.getText().matches("[\\w]+")) {
+						removeExistingEdge(node1Txt.getText(), node2Txt.getText());
+					}
+					else Controller.AlertBox.display(AlertType.WARNING, "Only word characters allowed.");
+				}
+			});
+			
 			// add elements to root pane
 			menuFile.getItems().addAll(menuitemLoadNetwork, menuitemSaveNetwork, menuitemExportNetworkImage);
 			menuBar.getMenus().addAll(menuFile);
 			root.setTop(menuBar);
-			// visualization pane to be added
+			visualization = new Visualization();
+			root.setCenter(visualization.getScrollPane());
 			nodeGrid1.getChildren().addAll(nodeSelectionTxt, searchNode);
-			nodeGrid2.getChildren().addAll(nodeSizeLbl, nodeSizeTxt, nodeShapeLbl, nodeShapeBox, nodeColorLbl, nodeColorPicker, updateNode);
+			nodeGrid2.getChildren().addAll(nodeSizeLbl, nodeSizeTxt, nodeShapeLbl, nodeShapeComboBox, nodeColorLbl, nodeColorPicker, updateNode);
 			edgeGrid.getChildren().addAll(node1Lbl, node1Txt, node2Lbl, node2Txt, addEdge, removeEdge);
 			editingPanel.getChildren().addAll(title, nodeSubtitle, nodeGrid1, nodeGrid2, edgeSubtitle, edgeGrid);
 			root.setRight(editingPanel);
@@ -126,5 +202,40 @@ public class Main extends Application{
 			System.err.println(e.getMessage());
 		}
 	}
-
+	
+	/**
+	 * adds new edge to network
+     * @param nodeName1
+     * @param nodeName2
+     */
+	public void addNewEdge(String nodeName1, String nodeName2) {
+		NetNode node1 = new NetNode(nodeName1);
+		NetNode node2 = new NetNode(nodeName2);
+		Network network = visualization.getNetwork();
+		if(!network.getNodes().contains(node1)) network.addNode(node1.getName());
+        if(!network.getNodes().contains(node2) && !node2.equals(node1)) network.addNode(node2.getName());
+        if(!network.getEdges().contains(new NetEdge(node1, node2))) network.addEdge(node1.getName(), node2.getName());
+        else Controller.AlertBox.display(AlertType.WARNING, "Given edge is already present.");
+        visualization.update();
+	}
+	
+	/**
+	 * removes edge from network
+     * @param nodeName1
+     * @param nodeName2
+     */
+	public void removeExistingEdge(String nodeName1, String nodeName2) {
+		NetNode node1 = new NetNode(nodeName1);
+		NetNode node2 = new NetNode(nodeName2);
+		Network network = visualization.getNetwork();
+		if(network.getEdges().contains(new NetEdge(node1, node2))) network.removeEdge(node1.getName(), node2.getName());
+        else Controller.AlertBox.display(AlertType.WARNING, "Given edge is not present.");
+		if(network.getNodes().contains(node1) && network.getNode(node1).getLinkedNodes().isEmpty()) network.removeNode(network.getNode(node1));
+		if(network.getNodes().contains(node2) && network.getNode(node2).getLinkedNodes().isEmpty()) network.removeNode(network.getNode(node2));
+		visualization.update();
+	}
+	
+	public static void main(String[] args) {
+		launch(args);
+	}
 }
