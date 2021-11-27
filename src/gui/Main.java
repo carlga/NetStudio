@@ -1,14 +1,20 @@
 package gui;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import core.NetEdge;
 import core.NetNode;
 import core.Network;
 import handlers.Controller;
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
@@ -19,6 +25,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -26,6 +33,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import visualization.NetNodeShape;
 import visualization.Visualization;
@@ -125,6 +133,39 @@ public class Main extends Application{
 			AnchorPane.setRightAnchor(statusLbl, 10.0);
 			
 			// set action events
+			menuitemLoadNetwork.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					File file = locateFile(primaryStage);
+					loadFile(file);
+					networkInfoLbl.setText(getNetworkInfoLbl());
+				}
+			});
+			menuitemSaveNetwork.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					Network network = visualization.getNetwork();
+					if(!network.getNodes().isEmpty()) {
+						File file = setSavingFile(primaryStage);
+						if(file != null) network.exportNetwork(file);
+					} else Controller.AlertBox.display(AlertType.WARNING, "Please, load a network.");
+				}
+			});
+			menuitemExportNetworkImage.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					Network network = visualization.getNetwork();
+					if(!network.getNodes().isEmpty()) {
+						File file = setSavingImg(primaryStage);
+						if(file != null) {
+							WritableImage writableImage = visualization.getNodeLayer().snapshot(new SnapshotParameters(), null);
+							BufferedImage bufferedImage = SwingFXUtils.fromFXImage(writableImage, null);
+							try {
+								ImageIO.write(bufferedImage, "png", file);
+							} catch (IOException e) {
+								System.err.println(e.getMessage());
+							}
+						}
+					} else Controller.AlertBox.display(AlertType.WARNING, "Please, load a network.");
+				}
+			});
 			searchNode.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent event) {
 					if(nodeSelectionTxt.getText().matches("[\\w]+")) {
@@ -204,6 +245,33 @@ public class Main extends Application{
 	}
 	
 	/**
+	 * prompts file explorer for loading file selection
+	 * @return
+	 */
+	public File locateFile(Stage stage) {
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle("Load File");
+		chooser.getExtensionFilters().addAll(
+				new FileChooser.ExtensionFilter("Network files", "*.txt", "*.tab"),
+				new FileChooser.ExtensionFilter("All files", "*.*"));
+		return chooser.showOpenDialog(stage);
+	}
+
+	/**
+	 * loads network from a given file
+	 * @param file
+	 */
+	public void loadFile(File file) {
+		if(file != null){
+			Network network = visualization.getNetwork();
+			visualization.clear();
+			network.clear();
+			network.loadFromFile(file);        	
+			visualization.update();
+		}
+	}
+	
+	/**
 	 * adds new edge to network
      * @param nodeName1
      * @param nodeName2
@@ -233,6 +301,43 @@ public class Main extends Application{
 		if(network.getNodes().contains(node1) && network.getNode(node1).getLinkedNodes().isEmpty()) network.removeNode(network.getNode(node1));
 		if(network.getNodes().contains(node2) && network.getNode(node2).getLinkedNodes().isEmpty()) network.removeNode(network.getNode(node2));
 		visualization.update();
+	}
+	
+	/**
+	 * displays number of nodes and edges in network
+     * @return
+     */
+	public String getNetworkInfoLbl() {
+		Network network = visualization.getNetwork();
+		String nodeNumber = Integer.toString(network.getNodes().size());
+		String edgeNumber = Integer.toString(network.getEdges().size());
+		return nodeNumber + " nodes, " + edgeNumber + " edges";
+	}
+	
+	/**
+	 * prompts file explorer for saving file
+     * @return
+     */
+	public static File setSavingFile(Stage stage) {
+		FileChooser chooser = new FileChooser();
+	    chooser.setTitle("Save File");
+        chooser.getExtensionFilters().addAll(
+        		new FileChooser.ExtensionFilter("Network files", "*.txt", "*.tab"),
+        		new FileChooser.ExtensionFilter("All files", "*.*"));
+        return chooser.showSaveDialog(stage);
+	}
+	
+	/**
+	 * prompts file explorer for saving image
+     * @return@
+     */
+	public File setSavingImg(Stage stage) {
+		FileChooser chooser = new FileChooser();
+	    chooser.setTitle("Save Image");
+        chooser.getExtensionFilters().addAll(
+        		new FileChooser.ExtensionFilter("Network image", "*.png"),
+        		new FileChooser.ExtensionFilter("All files", "*.*"));
+        return chooser.showSaveDialog(stage);
 	}
 	
 	public static void main(String[] args) {
