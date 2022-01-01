@@ -9,6 +9,7 @@ import core.NetNode;
 import core.Network;
 import handlers.Controller;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,7 +25,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
@@ -36,6 +40,8 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import layouts.Layout;
+import layouts.RandomLayout;
 import visualization.NetNodeShape;
 import visualization.Visualization;
 
@@ -66,6 +72,10 @@ public class Main extends Application{
 			Menu menuVisualize = new Menu("Visualize");
 			CheckMenuItem checkmenuitemShowNodeNames = new CheckMenuItem("Show node names");
 			CheckMenuItem checkmenuitemSizeNodesByDegree = new CheckMenuItem("Size nodes by degree");
+			SeparatorMenuItem menuitemSeparator = new SeparatorMenuItem();
+			RadioMenuItem radiomenuitemRandomLayout = new RadioMenuItem("Random layout");
+			ToggleGroup layoutToggleGroup = new ToggleGroup();
+			layoutToggleGroup.getToggles().addAll(radiomenuitemRandomLayout);
 			
 			// create elements for the editing panel
 			VBox editingPanel = new VBox();
@@ -141,6 +151,9 @@ public class Main extends Application{
 				public void handle(ActionEvent event) {
 					File file = locateFile(primaryStage);
 					loadFile(file);
+					checkmenuitemShowNodeNames.setSelected(false);
+			    	checkmenuitemSizeNodesByDegree.setSelected(false);
+			    	radiomenuitemRandomLayout.setSelected(true);
 					networkInfoLbl.setText(getNetworkInfoLbl());
 				}
 			});
@@ -205,6 +218,19 @@ public class Main extends Application{
 					}
 				}
 			});
+			radiomenuitemRandomLayout.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					statusLbl.setText("Running...");
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						System.err.println(e.getMessage());
+					}
+					Layout layout = new RandomLayout(visualization);
+					Platform.runLater ( () -> layout.execute());
+					Platform.runLater ( () -> statusLbl.setText(""));
+				}
+			});
 			searchNode.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent event) {
 					if(nodeSelectionTxt.getText().matches("[\\w]+")) {
@@ -259,7 +285,7 @@ public class Main extends Application{
 			
 			// add elements to root pane
 			menuFile.getItems().addAll(menuitemLoadNetwork, menuitemSaveNetwork, menuitemExportNetworkImage);
-			menuVisualize.getItems().addAll(checkmenuitemShowNodeNames, checkmenuitemSizeNodesByDegree);
+			menuVisualize.getItems().addAll(checkmenuitemShowNodeNames, checkmenuitemSizeNodesByDegree, menuitemSeparator, radiomenuitemRandomLayout);
 			menuBar.getMenus().addAll(menuFile, menuVisualize);
 			root.setTop(menuBar);
 			visualization = new Visualization();
