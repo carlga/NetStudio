@@ -40,6 +40,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import layouts.ForceDirectedLayout;
 import layouts.Layout;
 import layouts.RandomLayout;
 import visualization.NetNodeShape;
@@ -74,8 +75,9 @@ public class Main extends Application{
 			CheckMenuItem checkmenuitemSizeNodesByDegree = new CheckMenuItem("Size nodes by degree");
 			SeparatorMenuItem menuitemSeparator = new SeparatorMenuItem();
 			RadioMenuItem radiomenuitemRandomLayout = new RadioMenuItem("Random layout");
+			RadioMenuItem radiomenuitemForceDirectedLayout = new RadioMenuItem("Force directed layout");
 			ToggleGroup layoutToggleGroup = new ToggleGroup();
-			layoutToggleGroup.getToggles().addAll(radiomenuitemRandomLayout);
+			layoutToggleGroup.getToggles().addAll(radiomenuitemRandomLayout, radiomenuitemForceDirectedLayout);
 			
 			// create elements for the editing panel
 			VBox editingPanel = new VBox();
@@ -231,6 +233,19 @@ public class Main extends Application{
 					Platform.runLater ( () -> statusLbl.setText(""));
 				}
 			});
+			radiomenuitemForceDirectedLayout.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					statusLbl.setText("Running...");
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						System.err.println(e.getMessage());
+					}
+					Layout layout = new ForceDirectedLayout(visualization);
+					Platform.runLater ( () -> layout.execute());
+					Platform.runLater ( () -> statusLbl.setText(""));
+				}
+			});
 			searchNode.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent event) {
 					if(nodeSelectionTxt.getText().matches("[\\w]+")) {
@@ -285,7 +300,7 @@ public class Main extends Application{
 			
 			// add elements to root pane
 			menuFile.getItems().addAll(menuitemLoadNetwork, menuitemSaveNetwork, menuitemExportNetworkImage);
-			menuVisualize.getItems().addAll(checkmenuitemShowNodeNames, checkmenuitemSizeNodesByDegree, menuitemSeparator, radiomenuitemRandomLayout);
+			menuVisualize.getItems().addAll(checkmenuitemShowNodeNames, checkmenuitemSizeNodesByDegree, menuitemSeparator, radiomenuitemRandomLayout, radiomenuitemForceDirectedLayout);
 			menuBar.getMenus().addAll(menuFile, menuVisualize);
 			root.setTop(menuBar);
 			visualization = new Visualization();
