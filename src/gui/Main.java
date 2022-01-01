@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -62,6 +63,9 @@ public class Main extends Application{
 			MenuItem menuitemLoadNetwork = new MenuItem("Load network");
 			MenuItem menuitemSaveNetwork = new MenuItem("Save network");
 			MenuItem menuitemExportNetworkImage = new MenuItem("Export network image");
+			Menu menuVisualize = new Menu("Visualize");
+			CheckMenuItem checkmenuitemShowNodeNames = new CheckMenuItem("Show node names");
+			CheckMenuItem checkmenuitemSizeNodesByDegree = new CheckMenuItem("Size nodes by degree");
 			
 			// create elements for the editing panel
 			VBox editingPanel = new VBox();
@@ -166,6 +170,41 @@ public class Main extends Application{
 					} else Controller.AlertBox.display(AlertType.WARNING, "Please, load a network.");
 				}
 			});
+			checkmenuitemShowNodeNames.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					Network network = visualization.getNetwork();
+					if(!network.getNodes().isEmpty()) {
+						if (checkmenuitemShowNodeNames.isSelected()) network.getNodes().forEach(node -> { node.showNameView();});
+		                else network.getNodes().forEach(node -> { node.hideNameView();});
+					} else {
+						checkmenuitemShowNodeNames.setSelected(false);
+						Controller.AlertBox.display(AlertType.WARNING, "Please, load a network.");
+					}
+				}
+			});
+			checkmenuitemSizeNodesByDegree.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					Network network = visualization.getNetwork();
+					if(!network.getNodes().isEmpty()) {
+						if (checkmenuitemSizeNodesByDegree.isSelected()) {
+							for(NetNode node : network.getNodes()) {
+								NetEdge edge = new NetEdge(new NetNode(node.getName()), new NetNode(node.getName()));
+								node.sizeByDegree();
+								if(network.getEdges().contains(edge)) network.getEdge(edge).updateInteractionView(node);
+							}
+						} else {
+		                	for(NetNode node : network.getNodes()) {
+		                		NetEdge edge = new NetEdge(new NetNode(node.getName()), new NetNode(node.getName()));
+								node.resetSize();
+								if(network.getEdges().contains(edge)) network.getEdge(edge).updateInteractionView(node);
+							}
+		                }
+					} else {
+						checkmenuitemSizeNodesByDegree.setSelected(false);
+						Controller.AlertBox.display(AlertType.WARNING, "Please, load a network.");
+					}
+				}
+			});
 			searchNode.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent event) {
 					if(nodeSelectionTxt.getText().matches("[\\w]+")) {
@@ -220,7 +259,8 @@ public class Main extends Application{
 			
 			// add elements to root pane
 			menuFile.getItems().addAll(menuitemLoadNetwork, menuitemSaveNetwork, menuitemExportNetworkImage);
-			menuBar.getMenus().addAll(menuFile);
+			menuVisualize.getItems().addAll(checkmenuitemShowNodeNames, checkmenuitemSizeNodesByDegree);
+			menuBar.getMenus().addAll(menuFile, menuVisualize);
 			root.setTop(menuBar);
 			visualization = new Visualization();
 			root.setCenter(visualization.getScrollPane());
