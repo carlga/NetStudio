@@ -79,6 +79,8 @@ public class Main extends Application{
 			RadioMenuItem radiomenuitemForceDirectedLayout = new RadioMenuItem("Force directed layout");
 			ToggleGroup layoutToggleGroup = new ToggleGroup();
 			layoutToggleGroup.getToggles().addAll(radiomenuitemRandomLayout, radiomenuitemForceDirectedLayout);
+			Menu menuAnalyze = new Menu("Analyze");
+			MenuItem menuitemDegreeAnalysis = new MenuItem("Degree analysis");
 			Menu menuHelp = new Menu("Help");
 			MenuItem menuitemHelpWindow = new MenuItem("Open help in Browser");
 			
@@ -249,12 +251,17 @@ public class Main extends Application{
 					Platform.runLater ( () -> statusLbl.setText(""));
 				}
 			});
+			menuitemDegreeAnalysis.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent event) {
+					if(!visualization.getNetwork().getNodes().isEmpty()) DegreeAnalysisWindow.display(visualization.getNetwork());
+					else Controller.AlertBox.display(AlertType.WARNING, "Load a network for analysis.");
+				}
+			});
 			menuitemHelpWindow.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
 				public void handle(ActionEvent event) {
 					Hyperlink url = new Hyperlink("https://github.com/carlga/NetStudio");
 					getHostServices().showDocument(url.getText());
-					//openBrowser(url.getText());
 				}
 			});
 			searchNode.setOnAction(new EventHandler<ActionEvent>() {
@@ -312,8 +319,9 @@ public class Main extends Application{
 			// add elements to root pane
 			menuFile.getItems().addAll(menuitemLoadNetwork, menuitemSaveNetwork, menuitemExportNetworkImage);
 			menuVisualize.getItems().addAll(checkmenuitemShowNodeNames, checkmenuitemSizeNodesByDegree, menuitemSeparator, radiomenuitemRandomLayout, radiomenuitemForceDirectedLayout);
+			menuAnalyze.getItems().addAll(menuitemDegreeAnalysis);
 			menuHelp.getItems().addAll(menuitemHelpWindow);
-			menuBar.getMenus().addAll(menuFile, menuVisualize, menuHelp);
+			menuBar.getMenus().addAll(menuFile, menuVisualize, menuAnalyze, menuHelp);
 			root.setTop(menuBar);
 			visualization = new Visualization();
 			root.setCenter(visualization.getScrollPane());
@@ -345,7 +353,7 @@ public class Main extends Application{
 		FileChooser chooser = new FileChooser();
 		chooser.setTitle("Load File");
 		chooser.getExtensionFilters().addAll(
-				new FileChooser.ExtensionFilter("Network files", "*.txt", "*.tab"),
+				new FileChooser.ExtensionFilter("Network files", "*.txt", "*.tab", "*.tsv"),
 				new FileChooser.ExtensionFilter("All files", "*.*"));
 		return chooser.showOpenDialog(stage);
 	}
