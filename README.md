@@ -11,6 +11,20 @@
 | ***Architecture of the NetStudio application.*** |
 
 
+## Installation
+
+This Java program has been developed and tested on a Windows machine using *jdk-17.0.1* and
+*javafx-sdk-17.0.1*. To run the application download the files from release v1.0 containing 
+the pre-compiled JAR file. Once you have the unzipped folder execute *NetStudio.bat* or run 
+from the command line:
+
+```
+java --module-path ".\javafx-sdk-17.0.1\lib" --add-modules javafx.controls,javafx.fxml,javafx.swing -jar NetStudio.jar
+```
+
+Alternatively, download repository from GitHub and run from source.
+
+
 ## Usage
 
 The application features a minimalist design to make its use as streamlined as possible.
@@ -27,22 +41,22 @@ properties for the network degree with its average, the main hubs and node-speci
 
 ### File import/export
 
-Network files can be loaded from the main window (**File > Load network**). Only tab-delimited node 
+Network files can be loaded from the main window (***File > Load network***). Only tab-delimited node 
 interaction files are allowed. Networks can also be exported from the program in the same format
-(**File > Save network**).
+(***File > Save network***).
 
 
 ### Network visualization
 
 Networks are displayed in the view panel of the main window and newly added nodes are randomly 
 located by default. Zooming options are actioned with mouse scrolling and node dragging is  
-enabled. Images from the network view can be exported (**File > Export network image**).
-Name tags for the nodes can be enabled/disabled anytime (**Visualize > Show node names**) and 
-degree-based node resizing is also available (**Visualize > Size nodes by degree**).
+enabled. Images from the network view can be exported (***File > Export network image***)
+Name tags for the nodes can be enabled/disabled anytime (***Visualize > Show node names***) and 
+degree-based node resizing is also available (***Visualize > Size nodes by degree***).
 
 Two display options are available:
-- Random layout (**Visualize > Random layout**)
-- Force directed layout (**Visualize > Force directed layout**).
+- Random layout (***Visualize > Random layout***)
+- Force directed layout (***Visualize > Force directed layout***)
 
 | ![visualization](./pics/network-layouts.png) |
 |:--:|
@@ -53,14 +67,14 @@ Two display options are available:
 
 The editing pad is located at the right side of the main window and allows to
 interact with the network and its visualization. Visualization properties for existing
-nodes can be checked and updated in the upper section (**Node**). The network can be 
-modified with the bottom one (**Edge**) by adding/removing edges.
+nodes can be checked and updated in the upper section (***Node***). The network can be 
+modified with the bottom one (***Edge***) by adding/removing edges.
 
 
 ### Network analysis
 
 A new window for degree analysis of the network can be opened from the menu bar 
-(**Analyze > Degree analysis**). Here, the degree distribution can be visualized in
+(***Analyze > Degree analysis***). Here, the degree distribution can be visualized in
 a bar plot and the distribution table can also be exported to a tab-delimited file. 
 Other features include average degree calculation, hub node identification and 
 obtaining node-specific interactions.
