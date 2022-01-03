@@ -21,6 +21,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -78,6 +79,8 @@ public class Main extends Application{
 			RadioMenuItem radiomenuitemForceDirectedLayout = new RadioMenuItem("Force directed layout");
 			ToggleGroup layoutToggleGroup = new ToggleGroup();
 			layoutToggleGroup.getToggles().addAll(radiomenuitemRandomLayout, radiomenuitemForceDirectedLayout);
+			Menu menuHelp = new Menu("Help");
+			MenuItem menuitemHelpWindow = new MenuItem("Open help in Browser");
 			
 			// create elements for the editing panel
 			VBox editingPanel = new VBox();
@@ -246,6 +249,14 @@ public class Main extends Application{
 					Platform.runLater ( () -> statusLbl.setText(""));
 				}
 			});
+			menuitemHelpWindow.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					Hyperlink url = new Hyperlink("https://github.com/carlga/NetStudio");
+					getHostServices().showDocument(url.getText());
+					//openBrowser(url.getText());
+				}
+			});
 			searchNode.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent event) {
 					if(nodeSelectionTxt.getText().matches("[\\w]+")) {
@@ -301,7 +312,8 @@ public class Main extends Application{
 			// add elements to root pane
 			menuFile.getItems().addAll(menuitemLoadNetwork, menuitemSaveNetwork, menuitemExportNetworkImage);
 			menuVisualize.getItems().addAll(checkmenuitemShowNodeNames, checkmenuitemSizeNodesByDegree, menuitemSeparator, radiomenuitemRandomLayout, radiomenuitemForceDirectedLayout);
-			menuBar.getMenus().addAll(menuFile, menuVisualize);
+			menuHelp.getItems().addAll(menuitemHelpWindow);
+			menuBar.getMenus().addAll(menuFile, menuVisualize, menuHelp);
 			root.setTop(menuBar);
 			visualization = new Visualization();
 			root.setCenter(visualization.getScrollPane());
